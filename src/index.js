@@ -6,8 +6,8 @@
  * 2. Endpoint: TARGET_KEY → Base URL
  * 3. Path: TARGET_KEY:SOURCE_PATH → DESTINATION_PATH
  *
- * KV Key Prefixes:
- * - route:CUSTOMER:WAREHOUSE or route:CUSTOMER → TARGET_KEY
+ * KV Key Patterns:
+ * - CUSTOMER:WAREHOUSE or CUSTOMER → TARGET_KEY
  * - endpoint:TARGET_KEY → https://endpoint.example.com
  * - path:TARGET_KEY:/source/path → /destination/path
  */
@@ -79,12 +79,12 @@ export default {
 			let targetKey = null;
 
 			if (warehouseId) {
-				targetKey = await env.ROUTING_KV.get(`route:${customerId}:${warehouseId}`);
+				targetKey = await env.ROUTING_KV.get(`${customerId}:${warehouseId}`);
 			}
 
 			// Fallback to customer-level routing if warehouse-specific not found
 			if (!targetKey) {
-				targetKey = await env.ROUTING_KV.get(`route:${customerId}`);
+				targetKey = await env.ROUTING_KV.get(`${customerId}`);
 			}
 
 			if (!targetKey) {

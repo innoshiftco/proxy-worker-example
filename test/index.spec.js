@@ -23,10 +23,10 @@ const mockServer = {
 describe('Proxy Worker', () => {
 	beforeAll(async () => {
 		// Set up multi-level mapping in KV
-		// Routing mappings
-		await env.ROUTING_KV.put('route:NESTLE:GDEC-01', 'TARGET_A');
-		await env.ROUTING_KV.put('route:PEPSI:WAREHOUSE-02', 'TARGET_B');
-		await env.ROUTING_KV.put('route:COCA_COLA', 'TARGET_A'); // Customer-level routing
+		// Routing mappings (no prefix needed)
+		await env.ROUTING_KV.put('NESTLE:GDEC-01', 'TARGET_A');
+		await env.ROUTING_KV.put('PEPSI:WAREHOUSE-02', 'TARGET_B');
+		await env.ROUTING_KV.put('COCA_COLA', 'TARGET_A'); // Customer-level routing
 
 		// Endpoint mappings
 		await env.ROUTING_KV.put('endpoint:TARGET_A', 'https://httpbin.dev');

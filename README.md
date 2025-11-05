@@ -16,8 +16,8 @@ A Cloudflare Workers proxy that intelligently routes requests to different endpo
 ```
 Request with customerId + warehouseId
     ↓
-1. Lookup Routing: route:CUSTOMER:WAREHOUSE → TARGET_KEY
-   (Fallback: route:CUSTOMER → TARGET_KEY)
+1. Lookup Routing: CUSTOMER:WAREHOUSE → TARGET_KEY
+   (Fallback: CUSTOMER → TARGET_KEY)
     ↓
 2. Lookup Endpoint: endpoint:TARGET_KEY → https://api.example.com
     ↓
@@ -94,12 +94,12 @@ Add your routing configuration to KV. The worker uses three types of mappings:
 # Replace <KV_ID> with your namespace ID from Step 1
 
 # Warehouse-specific routing
-wrangler kv key put --namespace-id=<KV_ID> "route:NESTLE:GDEC-01" "TARGET_A"
-wrangler kv key put --namespace-id=<KV_ID> "route:NESTLE:GDEC-02" "TARGET_B"
-wrangler kv key put --namespace-id=<KV_ID> "route:PEPSI:WAREHOUSE-01" "TARGET_C"
+wrangler kv key put --namespace-id=<KV_ID> "NESTLE:GDEC-01" "TARGET_A"
+wrangler kv key put --namespace-id=<KV_ID> "NESTLE:GDEC-02" "TARGET_B"
+wrangler kv key put --namespace-id=<KV_ID> "PEPSI:WAREHOUSE-01" "TARGET_C"
 
 # Customer-level routing (fallback when warehouse not found)
-wrangler kv key put --namespace-id=<KV_ID> "route:COCA_COLA" "TARGET_A"
+wrangler kv key put --namespace-id=<KV_ID> "COCA_COLA" "TARGET_A"
 ```
 
 #### 3.2 Endpoint Mappings (Target → Base URL)
@@ -131,8 +131,8 @@ For easier management, you can create a script to load multiple keys:
 KV_ID="your_kv_namespace_id"
 
 # Routing mappings
-wrangler kv key put --namespace-id=$KV_ID "route:NESTLE:GDEC-01" "TARGET_A"
-wrangler kv key put --namespace-id=$KV_ID "route:PEPSI:WAREHOUSE-01" "TARGET_B"
+wrangler kv key put --namespace-id=$KV_ID "NESTLE:GDEC-01" "TARGET_A"
+wrangler kv key put --namespace-id=$KV_ID "PEPSI:WAREHOUSE-01" "TARGET_B"
 
 # Endpoint mappings
 wrangler kv key put --namespace-id=$KV_ID "endpoint:TARGET_A" "https://api1.example.com"
@@ -196,7 +196,7 @@ curl -X POST https://proxy-worker.your-subdomain.workers.dev/api/inventory \
 
 **Request Flow:**
 1. Extracts `customerId=NESTLE`, `warehouseId=GDEC-01`
-2. Looks up `route:NESTLE:GDEC-01` → `TARGET_A`
+2. Looks up `NESTLE:GDEC-01` → `TARGET_A`
 3. Looks up `endpoint:TARGET_A` → `https://api1.example.com`
 4. Looks up `path:TARGET_A:/api/inventory` → `/webhook/inventory` (if configured)
 5. Forwards POST to `https://api1.example.com/webhook/inventory`
@@ -209,7 +209,7 @@ curl "https://proxy-worker.your-subdomain.workers.dev/api/status?customerId=PEPS
 
 **Request Flow:**
 1. Extracts query parameters: `customerId=PEPSI`, `warehouseId=WAREHOUSE-01`
-2. Looks up `route:PEPSI:WAREHOUSE-01` → `TARGET_C`
+2. Looks up `PEPSI:WAREHOUSE-01` → `TARGET_C`
 3. Looks up `endpoint:TARGET_C` → `https://api3.example.com`
 4. Forwards GET to `https://api3.example.com/api/status`
 
@@ -225,8 +225,8 @@ curl -X POST https://proxy-worker.your-subdomain.workers.dev/api/inventory \
 
 **Request Flow:**
 1. Extracts `customerId=COCA_COLA`, `warehouseId` not provided
-2. Looks up `route:COCA_COLA:undefined` → not found
-3. Falls back to `route:COCA_COLA` → `TARGET_A`
+2. Looks up `COCA_COLA:undefined` → not found
+3. Falls back to `COCA_COLA` → `TARGET_A`
 4. Continues with endpoint and path lookup
 
 ## Configuration Management
@@ -238,14 +238,14 @@ curl -X POST https://proxy-worker.your-subdomain.workers.dev/api/inventory \
 wrangler kv key list --namespace-id=<KV_ID>
 
 # Get specific key value
-wrangler kv key get --namespace-id=<KV_ID> "route:NESTLE:GDEC-01"
+wrangler kv key get --namespace-id=<KV_ID> "NESTLE:GDEC-01"
 ```
 
 ### Update Configuration
 
 ```bash
 # Update routing
-wrangler kv key put --namespace-id=<KV_ID> "route:NESTLE:GDEC-01" "TARGET_B"
+wrangler kv key put --namespace-id=<KV_ID> "NESTLE:GDEC-01" "TARGET_B"
 
 # Update endpoint
 wrangler kv key put --namespace-id=<KV_ID> "endpoint:TARGET_A" "https://new-api.example.com"
@@ -258,7 +258,7 @@ wrangler kv key put --namespace-id=<KV_ID> "path:TARGET_A:/api/shipments" "/logi
 
 ```bash
 # Delete specific key
-wrangler kv key delete --namespace-id=<KV_ID> "route:NESTLE:GDEC-01"
+wrangler kv key delete --namespace-id=<KV_ID> "NESTLE:GDEC-01"
 ```
 
 ## Error Responses
@@ -298,7 +298,7 @@ wrangler tail
 
 **Solution**: Verify routing configuration exists in KV:
 ```bash
-wrangler kv key get --namespace-id=<KV_ID> "route:CUSTOMER:WAREHOUSE"
+wrangler kv key get --namespace-id=<KV_ID> "CUSTOMER:WAREHOUSE"
 ```
 
 ### Issue: 404 - No endpoint found for target
